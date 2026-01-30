@@ -3,11 +3,11 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'علوم کامپیوتر فردوسی مشهد',
+  title: 'علوم داده، پیشنهادی فردوسی مشهد',
   favicon: 'img/fumcs-logo.ico',
 
   // Set the production url of your site here
-  url: 'https://fum-cs.github.io',
+  url: 'https://fum-ds.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '',
@@ -15,7 +15,7 @@ const config: Config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'Ferdowsi University of Mashhad, CS Dept.', // Usually your GitHub org/user name.
-  projectName: 'fumcs-docs', // Usually your repo name.
+  projectName: 'fumds-docs', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -88,7 +88,7 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/fum-cs/fum-cs.github.io',
+              href: 'https://github.com/fum-cs/fum-ds.github.io',
             },
           ],
         },
