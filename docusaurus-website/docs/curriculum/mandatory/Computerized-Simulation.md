@@ -1,5 +1,5 @@
 ---
-sidebar_position: 13
+sidebar_position: 15
 ---
 
 # شبیه‌سازی و مدل‌سازی
@@ -13,7 +13,7 @@ sidebar_position: 13
 |  |  |  |  |
 | --- | --- | --- | --- |
 | نام درس: | شبیه‌سازی و مدل‌سازی | مقطع: | کارشناسی |
-| پیش‌نیاز: | [احتمال و کاربردها](../mandatory/Probability-and-Its-Applications.md)، [یادگیری ماشینی](../skill/Machine-Learning.md) | گروه درس: | تخصصی الزامی |
+| پیش‌نیاز: | [احتمال و کاربردها](../mandatory/Probability-and-Its-Applications.md)، [یادگیری ماشینی](../mandatory/Machine-Learning.md) | گروه درس: | تخصصی الزامی |
 | هم‌نیاز: | ندارد | نوع درس: | نظری |
 | تعداد واحد: | 3 | تعداد ساعت: | 48 |
 | حل تمرین: | ندارد |  |  |

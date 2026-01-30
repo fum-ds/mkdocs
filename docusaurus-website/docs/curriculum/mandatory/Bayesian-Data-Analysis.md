@@ -1,5 +1,5 @@
 ---
-sidebar_position: 16
+sidebar_position: 21
 ---
 
 # تجزیه و تحلیل داده‌های بیزی
