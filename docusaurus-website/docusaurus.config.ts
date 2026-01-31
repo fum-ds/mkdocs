@@ -49,10 +49,10 @@ const config: Config = {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
     navbar: {
-      title: 'علوم کامپیوتر',
+      title: 'علوم داده',
       logo: {
         alt: 'FUMCS Logo',
-        src: 'img/fumcs-logo.png',
+        src: 'img/fumds-logo.png',
       },
       items: [
         {
@@ -105,7 +105,7 @@ const config: Config = {
 
       apiKey: '0f98e980c17dabdb99e47db17c02e055',
 
-      indexName: 'fumcs_curriculum',
+      indexName: 'fumds_curriculum',
     },
   } satisfies Preset.ThemeConfig,
   themes: [
