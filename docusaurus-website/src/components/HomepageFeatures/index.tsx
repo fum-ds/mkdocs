@@ -11,26 +11,26 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'وب سایت انگلیسی',
-    imageAddress: '/img/CS02.png',
+    title: 'مستندات برنامه درسی علوم داده',
+    imageAddress: '/img/Data_Science.png',
     description: (
-      <Link to='https://fumcs.github.io/'>FUM-CS English WebSite</Link>
+      <Link to='/docs'>مستندات برنامه درسی علوم داده</Link>
     ),
   },
   {
     title: 'برنامه درسی',
-    imageAddress: '/img/CS-Word-Cloud.png',
+    imageAddress: '/img/DS-Word-Cloud.png',
     description: (
       <Link to='/docs/category/برنامه-درسی'>
-        برنامه درسی پیشنهادی کارشناسی علوم کامپیوتر
+        برنامه درسی پیشنهادی کارشناسی علوم داده
       </Link>
     ),
   },
   {
-    title: 'پژوهش و تحقیق',
-    imageAddress: '/img/tiling.png',
+    title: 'جداول خلاصه',
+    imageAddress: '/img/base.png',
     description: (
-      <Link to='https://fumcs.github.io/projects/'>Rresearch Projects</Link>
+      <Link to='/docs/summary-tables'>جداول طبقه‌بندی شده درس‌ها</Link>
     ),
   },
 ];

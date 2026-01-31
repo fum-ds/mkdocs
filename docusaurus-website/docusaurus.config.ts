@@ -51,8 +51,8 @@ const config: Config = {
     navbar: {
       title: 'علوم داده',
       logo: {
-        alt: 'FUMCS Logo',
-        src: 'img/fumds-logo.png',
+        alt: 'FUMDS Logo',
+        src: 'img/fumcs-logo.png',
       },
       items: [
         {
@@ -88,7 +88,7 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/fum-cs/fum-ds.github.io',
+              href: 'https://github.com/fum-ds/fum-ds.github.io',
             },
           ],
         },

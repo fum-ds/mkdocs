@@ -40,7 +40,6 @@ def _generate_index_file(df: pd.DataFrame, summary_file: str, detailed_file: str
 
 1. **[فهرست درس‌ها](category/برنامه-درسی)**: اطلاعات کامل هر درس به صورت جداگانه
 2. **[جداول خلاصه](summary-tables)**: جداول طبقه‌بندی شده درس‌ها با لینک
-3. **[خلاصه آماری](detailed-summary)**: آمار و اطلاعات دقیق برنامه درسی
 
 ## دسترسی سریع
 
@@ -240,8 +239,8 @@ def main():
         # خلاصه دقیق (ابتدا کامل تولید می‌شود، سپس ساده می‌شود)
         detailed_file = './docs/detailed-summary.md'
         
-        # 5. ایجاد detailed-summary ساده شده
-        _simplify_detailed_summary(detailed_file)
+        # # 5. ایجاد detailed-summary ساده شده
+        # _simplify_detailed_summary(detailed_file)
         
         # 6. تولید index.md برای داکساروس
         _generate_index_file(df, summary_file, detailed_file)
@@ -257,13 +256,13 @@ def main():
         print("="*50)
         print(f"📁 Course files: ./docs/curriculum/")
         print(f"📄 Summary tables (with anchors): {summary_file}")
-        print(f"📄 Detailed summary (simplified): {detailed_file}")
+        # print(f"📄 Detailed summary (simplified): {detailed_file}")
         print(f"📄 Index file: ./docs/index.md")
-        print(f"📄 Docs README: ./docs/README.md")
+        print(f"📄 Docs repo-structure: ./docs/repo-structure.md")
         print(f"📄 Category config: ./docs/curriculum/_category_.json")
         print("="*50)
         print("\n📌 Important: Anchor links in summary-tables.md have been updated")
-        print("📌 Important: detailed-summary.md contains only statistics")
+        # print("📌 Important: detailed-summary.md contains only statistics")
         print("="*50)
         
         return df
@@ -275,8 +274,8 @@ def main():
         return None
 
 def _generate_docs_readme(df: pd.DataFrame) -> None:
-    """تولید فایل README برای پوشه docs"""
-    readme_content = """# مستندات برنامه درسی علوم داده
+    """تولید فایل repo_structure برای پوشه docs"""
+    readme_content = """# ساختار فایلهای وبگاه برنامه درسی علوم داده
 
 این پوشه حاوی تمام مستندات تولید شده برای برنامه درسی علوم داده می‌باشد.
 
@@ -288,13 +287,12 @@ def _generate_docs_readme(df: pd.DataFrame) -> None:
 ### 2. جداول خلاصه (`summary-tables.md`)
 جداول طبقه‌بندی شده بر اساس نوع درس با لینک به صفحات هر درس. دارای Anchorهای مستقیم برای دسترسی سریع.
 
-### 3. خلاصه آماری (`detailed-summary.md`)
-آمار کلی برنامه درسی شامل تعداد درس‌ها، واحدها و سایر اطلاعات آماری.
-
-### 4. صفحه اصلی (`index.md`)
+### 3. صفحه اصلی (`index.md`)
 صفحه اصلی با دسترسی سریع به تمام بخش‌ها.
 
 ## ساختار
+
+```
 docs/
 ├── curriculum/ # فایل‌های درسی (دسته‌بندی شده)
 │ ├── base/ # دروس پایه
@@ -306,7 +304,8 @@ docs/
 ├── summary-tables.md # جداول خلاصه با Anchorها
 ├── detailed-summary.md # آمار کلی
 ├── index.md # صفحه اصلی
-└── README.md # این فایل
+└── repo_structure.md # این فایل
+```
 
 ## Anchorهای مستقیم
 
@@ -327,10 +326,10 @@ docs/
 """
     
     os.makedirs('./docs', exist_ok=True)
-    with open('./docs/README.md', 'w', encoding='utf-8') as f:
+    with open('./docs/repo-structure.md', 'w', encoding='utf-8') as f:
         f.write(readme_content)
     
-    print("✅ Docs README generated: ./docs/README.md")
+    print("✅ Docs repo-structure generated: ./docs/repo-structure.md")
 
 def _generate_category_json() -> None:
     """تولید فایل _category_.json برای دسته‌بندی Docusaurus"""
