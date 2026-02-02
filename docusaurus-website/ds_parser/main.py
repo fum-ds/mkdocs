@@ -36,25 +36,23 @@ def _generate_index_file(df: pd.DataFrame, summary_file: str, detailed_file: str
 
 این بخش شامل اطلاعات کامل درباره برنامه درسی رشته علوم داده می‌باشد.
 
-## بخش‌های مختلف
+1. **[فهرست درس‌ها](category/برنامه-درسی)**: اطلاعات کامل هر درس به صورت جداگانه از منوی سمت راست قابل دسترس هست
+2. جداول دروس پایه، تخصصی (الزامی) و مهارتی هم از منوی سمت راست قابل دسترس هست.
+دروس اختیاری بعداً اضافه خواهند شد.
 
-1. **[فهرست درس‌ها](category/برنامه-درسی)**: اطلاعات کامل هر درس به صورت جداگانه
-2. **[جداول خلاصه](summary-tables)**: جداول طبقه‌بندی شده درس‌ها با لینک
-
-## دسترسی سریع
 
 """
+# ## دسترسی سریع     
+#     # ایجاد Anchorهای ایمن برای لینک‌های داخلی
+#     section_titles = [
+#         ('دروس پایه', 'base-courses'),
+#         ('دروس الزامی', 'mandatory-courses'),
+#         ('دروس اختیاری', 'elective-courses'),
+#         ('دروس مهارتی', 'skill-courses')
+#     ]
     
-    # ایجاد Anchorهای ایمن برای لینک‌های داخلی
-    section_titles = [
-        ('دروس پایه', 'base-courses'),
-        ('دروس الزامی', 'mandatory-courses'),
-        ('دروس اختیاری', 'elective-courses'),
-        ('دروس مهارتی', 'skill-courses')
-    ]
-    
-    for persian_title, english_anchor in section_titles:
-        index_content += f"- [{persian_title}](summary-tables#{english_anchor})\n"
+#     for persian_title, english_anchor in section_titles:
+#         index_content += f"- [{persian_title}](summary-tables#{english_anchor})\n"
     
     index_content += "\n## آمار کلی\n\n"
     
@@ -105,16 +103,6 @@ def _generate_index_file(df: pd.DataFrame, summary_file: str, detailed_file: str
     
     # اضافه کردن لینک‌های بیشتر
     index_content += """
-## اطلاعات بیشتر
-
-برای مشاهده جزئیات کامل هر درس، بر روی نام درس در [جداول خلاصه](summary-tables) کلیک کنید.
-
-## ساختار
-
-- **برنامه درسی**: فایل‌های جداگانه هر درس (دسته‌بندی شده)
-- **جداول خلاصه**: جداول طبقه‌بندی شده با لینک
-- **خلاصه آماری**: آمار و تحلیل‌های دقیق
-
 ---
 *آخرین به‌روزرسانی: به صورت خودکار تولید شده*
 """

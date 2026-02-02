@@ -12,14 +12,14 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
   {
     title: 'مستندات برنامه درسی علوم داده',
-    imageAddress: '/img/Data_Science.png',
+    imageAddress: 'img/Data_Science.png',
     description: (
       <Link to='/docs'>مستندات برنامه درسی علوم داده</Link>
     ),
   },
   {
     title: 'برنامه درسی',
-    imageAddress: '/img/DS-Word-Cloud.png',
+    imageAddress: 'img/DS-Word-Cloud.png',
     description: (
       <Link to='/docs/category/برنامه-درسی'>
         برنامه درسی پیشنهادی کارشناسی علوم داده
@@ -28,7 +28,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'جداول خلاصه',
-    imageAddress: '/img/base.png',
+    imageAddress: 'img/base.png',
     description: (
       <Link to='/docs/summary-tables'>جداول طبقه‌بندی شده درس‌ها</Link>
     ),

@@ -4,13 +4,16 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
   title: 'علوم داده، پیشنهادی فردوسی مشهد',
-  favicon: 'img/fumcs-logo.ico',
+  favicon: 'img/dslab-logo.ico',
 
   // Set the production url of your site here
-  url: 'https://fum-ds.github.io',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '',
+  // url: 'https://fum-ds.github.io',
+  // // Set the /<baseUrl>/ pathname under which your site is served
+  // // For GitHub pages deployment, it is often '/<projectName>/'
+  // baseUrl: '',
+
+  url: 'https://mamintoosi.ir',
+  baseUrl: '/fum-ds/', // ← حتماً / در ابتدا و انتها
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -52,7 +55,7 @@ const config: Config = {
       title: 'علوم داده',
       logo: {
         alt: 'FUMDS Logo',
-        src: 'img/fumcs-logo.png',
+        src: 'img/dslab-logo.png',
       },
       items: [
         {
@@ -61,8 +64,8 @@ const config: Config = {
           position: 'left',
         },
         {
-          href: 'https://fumcs.github.io',
-          label: 'GitHub',
+          href: 'https://www.um.ac.ir',
+          label: 'FUM',
           position: 'right',
         },
       ],
@@ -83,13 +86,13 @@ const config: Config = {
           title: 'لینک‌ها',
           items: [
             {
-              label: 'English Web site',
-              to: 'https://fumcs.github.io/',
+              label: 'Dr. M. Arashi',
+              to: 'https://prof.um.ac.ir/arashi',
             },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/fum-ds/fum-ds.github.io',
-            },
+            // {
+            //   label: 'GitHub',
+            //   href: 'https://github.com/fum-ds/fum-ds.github.io',
+            // },
           ],
         },
       ],
