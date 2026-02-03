@@ -59,7 +59,7 @@ const config: Config = {
       },
       items: [
         {
-          href: '/docs/intro',
+          href: '/docs',
           label: 'مستندات',
           position: 'left',
         },
@@ -78,7 +78,7 @@ const config: Config = {
           items: [
             {
               label: 'برنامه درسی',
-              to: '/docs/category/برنامه-درسی',
+              to: '/docs/category/curriculum',
             },
           ],
         },

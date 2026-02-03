@@ -80,7 +80,7 @@ class SummaryTableGenerator:
             
             # ایجاد لینک به صفحه درس (بدون عنوان انگلیسی)
             if en_file_name and en_file_name != 'nan':
-                link = f'docs/curriculum/{folder}/{en_file_name}.md'
+                link = f'curriculum/{folder}/{en_file_name}.md'
                 title_cell = f'[{fa_title}]({link})'
             else:
                 title_cell = fa_title

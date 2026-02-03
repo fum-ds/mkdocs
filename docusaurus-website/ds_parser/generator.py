@@ -4,12 +4,6 @@ import pandas as pd
 from typing import List, Dict
 from .models import Course
 
-# ds_parser/generator.py
-import os
-import pandas as pd
-from typing import List, Dict
-from .models import Course
-
 class DocusaurusMarkdownGenerator:
     """تولید کننده فایل‌های Markdown برای Docusaurus"""
     
@@ -21,7 +15,7 @@ class DocusaurusMarkdownGenerator:
             'تخصصی الزامی': 'mandatory',
             'تخصصی اختیاری': 'elective',
             'مهارتی': 'skill',
-            '': 'other'  # برای دروس بدون نوع
+            'سایر': 'other'  # برای دروس بدون نوع
         }
         self.course_mapping: Dict[str, Dict] = {}
     

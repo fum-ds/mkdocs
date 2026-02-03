@@ -5,6 +5,7 @@ import pandas as pd
 import urllib.parse
 from pathlib import Path
 from .utils import get_current_timestamp
+import json
 
 # اضافه کردن مسیر ماژول به sys.path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -221,12 +222,55 @@ def _simplify_detailed_summary(file_path: str) -> None:
         print(f"⚠️  Could not simplify detailed-summary: {str(e)}")
 
 
+# def fix_category_json_files():
+#     base_dir = "docs/category"
+    
+#     categories = [
+#         ("base", "دروس پایه", 2, "دروس پایه رشته علوم داده"),
+#         ("mandatory", "دروس الزامی", 3, "دروس تخصصی الزامی"),
+#         ("elective", "دروس اختیاری", 4, "دروس تخصصی اختیاری"),
+#         ("skill", "دروس مهارتی", 5, "دروس مهارتی و اشتغال‌پذیری")
+#     ]
+    
+#     for slug, label, position, description in categories:
+#         dir_path = os.path.join(base_dir, slug)
+#         os.makedirs(dir_path, exist_ok=True)
+        
+#         category_json = {
+#             "label": label,
+#             "position": position,
+#             "link": {
+#                 "type": "generated-index",
+#                 "description": description,
+#                 "slug": f"/category/{slug}"
+#             },
+#             "collapsed": False
+#         }
+        
+#         file_path = os.path.join(dir_path, "_category_.json")
+#         with open(file_path, 'w', encoding='utf-8') as f:
+#             json.dump(category_json, f, ensure_ascii=False, indent=2)
+        
+#         print(f"✅ Created: {file_path}")
+    
+#     # حذف پوشه curriculum اگر وجود دارد
+#     curriculum_path = os.path.join(base_dir, "curriculum")
+#     if os.path.exists(curriculum_path):
+#         import shutil
+#         shutil.rmtree(curriculum_path)
+#         print(f"✅ Removed: {curriculum_path}")
+
+
+
 def main():
     """تابع اصلی اجرای برنامه"""
     generation_time = get_current_timestamp()
     print(f"🚀 Starting generation at: {generation_time}")
     
+
     try:
+        # fix_category_json_files()
+    
         # 1. پارس کردن فایل
         parser = DSCourseParser('../input/DS-Chart.md')
         df = parser.parse_file()
@@ -255,8 +299,9 @@ def main():
         _generate_category_json(generation_time)
         
         # 6. تولید README
-        _generate_docs_readme(df, generation_time)
+        # _generate_docs_readme(df, generation_time)
         
+
         print("\n" + "="*60)
         print("✅ GENERATION COMPLETE!")
         print("="*60)
@@ -323,85 +368,67 @@ docs/
     print(f"✅ Docs repo-structure generated at: {generation_time}")
 
 def _generate_category_json(generation_time: str) -> None:
-    """تولید فایل _category_.json برای دسته‌بندی Docusaurus"""
-    
-    # دسته‌بندی‌های انگلیسی
-    categories = [
-        {
-            "slug": "curriculum",
-            "label": "برنامه درسی",
-            "position": 1,
-            "description": "برنامه درسی کامل رشته علوم داده"
-        },
-        {
-            "slug": "base", 
-            "label": "دروس پایه",
-            "position": 2,
-            "description": "دروس پایه رشته علوم داده"
-        },
-        {
-            "slug": "mandatory",
-            "label": "دروس الزامی", 
-            "position": 3,
-            "description": "دروس تخصصی الزامی"
-        },
-        {
-            "slug": "skill",
-            "label": "دروس مهارتی",
-            "position": 4,
-            "description": "دروس مهارتی و اشتغال‌پذیری"
-        },
-        {
-            "slug": "elective",
-            "label": "دروس اختیاری",
-            "position": 5, 
-            "description": "دروس تخصصی اختیاری"
-        }
-    ]
+    """تولید فایل‌های _category_.json ساده"""
     
     import json
     import os
     
-    # ایجاد پوشه category
-    os.makedirs('./docs/category', exist_ok=True)
-    
-    for category in categories:
-        category_dir = f'./docs/category/{category["slug"]}'
-        os.makedirs(category_dir, exist_ok=True)
-        
-        category_content = {
-            "label": category["label"],
-            "position": category["position"],
-            "link": {
-                "type": "generated-index",
-                "description": category["description"],
-                "slug": f"/category/{category['slug']}"
-            },
-            "collapsed": False,
-            "customProps": {
-                "generated": generation_time
+    # فقط فایل‌های ضروری را بساز
+    categories = [
+        {
+            "path": "./docs/curriculum/_category_.json",
+            "content": {
+                "label": "برنامه درسی",
+                "position": 1,
+                "link": {
+                    "type": "generated-index",
+                    "slug": "/category/curriculum"
+                },
+                "collapsed": False
+            }
+        },
+        {
+            "path": "./docs/curriculum/base/_category_.json",
+            "content": {
+                "label": "دروس پایه",
+                "position": 1,
+                "collapsed": False
+            }
+        },
+        {
+            "path": "./docs/curriculum/mandatory/_category_.json",
+            "content": {
+                "label": "دروس الزامی",
+                "position": 2,
+                "collapsed": False
+            }
+        },
+        {
+            "path": "./docs/curriculum/skill/_category_.json",
+            "content": {
+                "label": "دروس مهارتی",
+                "position": 3,
+                "collapsed": False
+            }
+        },
+        {
+            "path": "./docs/curriculum/elective/_category_.json", 
+            "content": {
+                "label": "دروس اختیاری",
+                "position": 4,
+                "collapsed": False
             }
         }
-        
-        with open(f'{category_dir}/_category_.json', 'w', encoding='utf-8') as f:
-            json.dump(category_content, f, ensure_ascii=False, indent=2)
-        
-        print(f"✅ Category config: {category_dir}/_category_.json")
+
+    ]
     
-    # همچنین یک فایل _category_.json در روت category ایجاد کنید
-    root_category = {
-        "label": "برنامه درسی",
-        "position": 1,
-        "link": {
-            "type": "generated-index",
-            "description": "دسته‌بندی کامل دروس علوم داده",
-            "slug": "/category/curriculum"
-        },
-        "collapsed": False
-    }
-    
-    with open('./docs/category/_category_.json', 'w', encoding='utf-8') as f:
-        json.dump(root_category, f, ensure_ascii=False, indent=2)
+    for category in categories:
+        os.makedirs(os.path.dirname(category["path"]), exist_ok=True)
+        
+        with open(category["path"], 'w', encoding='utf-8') as f:
+            json.dump(category["content"], f, ensure_ascii=False, indent=2)
+        
+        print(f"✅ Created: {category['path']}")
 
 if __name__ == "__main__":
     main()

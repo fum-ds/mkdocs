@@ -21,7 +21,7 @@ const FeatureList: FeatureItem[] = [
     title: 'برنامه درسی',
     imageAddress: 'img/DS-Word-Cloud.png',
     description: (
-      <Link to='/docs/category/برنامه-درسی'>
+      <Link to='/docs/category/curriculum'>
         برنامه درسی پیشنهادی کارشناسی علوم داده
       </Link>
     ),
