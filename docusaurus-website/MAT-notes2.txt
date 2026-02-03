@@ -1,0 +1,625 @@
+**عالی!** با داشتن `utils.py` می‌توانم اصلاحات کامل‌تری انجام دهم. 
+
+## **۱. اضافه کردن تاریخ و ساعت تولید محتوا:**
+
+### **اصلاح `utils.py`:**
+
+```python
+# در utils.py اضافه کنید:
+import datetime
+
+def get_current_timestamp() -> str:
+    """دریافت تاریخ و زمان فعلی به صورت فرمت شده"""
+    now = datetime.datetime.now()
+    
+    # فرمت فارسی
+    jalali_date = _convert_to_jalali(now)
+    
+    return f"{jalali_date} - {now.strftime('%H:%M')}"
+
+def _convert_to_jalali(gregorian_date: datetime.datetime) -> str:
+    """تبدیل تاریخ میلادی به شمسی (ساده شده)"""
+    # در صورت نصب بودن jdatetime:
+    try:
+        import jdatetime
+        jalali = jdatetime.datetime.fromgregorian(datetime=gregorian_date)
+        return jalali.strftime("%Y/%m/%d")
+    except ImportError:
+        # اگر jdatetime نصب نیست، از تاریخ میلادی استفاده کن
+        return gregorian_date.strftime("%Y/%m/%d")
+```
+
+### **استفاده در `main.py`:**
+
+**در تابع `main` یک متغیر global اضافه کنید:**
+
+```python
+# در بالای main.py بعد از imports
+from .utils import get_current_timestamp
+
+# سپس در تابع main
+def main():
+    """تابع اصلی اجرای برنامه"""
+    generation_time = get_current_timestamp()  # این خط را اضافه کنید
+    print(f"🕒 Generation started at: {generation_time}")
+    
+    # ...
+```
+
+### **اصلاح `_generate_index_file`:**
+
+```python
+def _generate_index_file(df: pd.DataFrame, summary_file: str, detailed_file: str, generation_time: str) -> None:
+    """تولید فایل index.md برای سازماندهی بهتر"""
+    
+    # ... کد قبلی
+    
+    # تغییر خط آخر
+    index_content += f"""
+---
+**تاریخ تولید**: {generation_time}
+
+*این مستندات به صورت خودکار تولید شده‌اند.*
+"""
+    
+    # ... بقیه کد
+```
+
+### **اصلاح `_generate_docs_readme`:**
+
+```python
+def _generate_docs_readme(df: pd.DataFrame, generation_time: str) -> None:
+    """تولید فایل repo_structure برای پوشه docs"""
+    readme_content = f"""# ساختار فایلهای وبگاه برنامه درسی علوم داده
+
+این فایل‌ها به صورت خودکار توسط اسکریپت Python تولید شده‌اند.
+
+## اطلاعات تولید
+
+- **تاریخ تولید**: {generation_time}
+- **تعداد درس‌ها**: {len(df) if df is not None else 'نامشخص'}
+
+## ساختار
+
+# ... بقیه محتوا
+```
+docs/
+├── curriculum/          # فایل‌های درسی اصلی (انگلیسی)
+│   ├── base/           # دروس پایه
+│   ├── mandatory/      # دروس الزامی  
+│   ├── elective/       # دروس اختیاری
+│   ├── skill/         # دروس مهارتی
+│   └── other/         # سایر دروس
+├── category/           # برای نمایش در Docusaurus (symlinks)
+│   ├── base/          # -> ../curriculum/base/
+│   ├── mandatory/     # -> ../curriculum/mandatory/
+│   ├── elective/      # -> ../curriculum/elective/
+│   ├── skill/        # -> ../curriculum/skill/
+│   └── other/        # -> ../curriculum/other/
+├── summary-tables.md   # جداول خلاصه
+├── index.md           # صفحه اصلی
+└── repo-structure.md  # این فایل
+```
+
+---
+*این مستندات به صورت خودکار در تاریخ {generation_time} تولید شده‌اند.*
+"""
+    
+    os.makedirs('./docs', exist_ok=True)
+    with open('./docs/repo-structure.md', 'w', encoding='utf-8') as f:
+        f.write(readme_content)
+    
+    print(f"✅ Docs repo-structure generated at: {generation_time}")
+```
+
+## **۲. اصلاح `create_filename` برای تولید اسلاگ انگلیسی بهتر:**
+
+### **اصلاح `utils.py`:**
+
+```python
+def create_filename(en_title: str, fa_title: str = None) -> str:
+    """ایجاد نام فایل انگلیسی از عنوان انگلیسی یا فارسی"""
+    # اولویت با عنوان انگلیسی
+    if en_title and en_title != 'nan' and not pd.isna(en_title):
+        filename = _slugify_en(str(en_title))
+    elif fa_title and fa_title != 'nan' and not pd.isna(fa_title):
+        filename = _slugify_fa(str(fa_title))
+    else:
+        return ''
+    
+    return filename
+
+def _slugify_en(text: str) -> str:
+    """ایجاد اسلاگ از متن انگلیسی"""
+    if not text:
+        return ''
+    
+    # تبدیل به حروف کوچک
+    text = text.lower()
+    
+    # جایگزینی کاراکترهای خاص
+    replacements = {
+        '&': 'and',
+        '@': 'at',
+        '%': 'percent',
+        '+': 'plus',
+        '#': 'sharp',
+        '?': '',
+        '!': '',
+        ':': '',
+        ';': '',
+        "'": '',
+        '"': '',
+        '`': '',
+        '~': '',
+        '(': '',
+        ')': '',
+        '[': '',
+        ']': '',
+        '{': '',
+        '}': '',
+        '<': '',
+        '>': '',
+        '/': '-',
+        '\\': '-',
+        '|': '-',
+        '=': '-',
+    }
+    
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+    
+    # حذف کاراکترهای غیرمجاز
+    text = re.sub(r'[^\w\s\-\.]', '', text)
+    
+    # جایگزینی فاصله با خط تیره
+    text = re.sub(r'[\s_]+', '-', text)
+    
+    # حذف خط تیره‌های تکراری
+    text = re.sub(r'\-+', '-', text)
+    
+    # حذف خط تیره از ابتدا و انتها
+    text = text.strip('-')
+    
+    return text
+
+def _slugify_fa(text: str) -> str:
+    """ایجاد اسلاگ از متن فارسی (ترجمه ساده)"""
+    if not text:
+        return ''
+    
+    # نگاشت ساده فارسی به انگلیسی برای کلمات رایج
+    persian_to_english = {
+        'ریاضی': 'mathematics',
+        'عمومی': 'general',
+        'آمار': 'statistics',
+        'احتمال': 'probability',
+        'مهندسی': 'engineering',
+        'برنامه‌نویسی': 'programming',
+        'داده': 'data',
+        'ساختار': 'structure',
+        'پایگاه': 'database',
+        'یادگیری': 'learning',
+        'ماشین': 'machine',
+        'هوش': 'intelligence',
+        'محاسبات': 'computing',
+        'الگوریتم': 'algorithm',
+        'کامپیوتر': 'computer',
+        'شبکه': 'network',
+        'نرم‌افزار': 'software',
+        'سخت‌افزار': 'hardware',
+        'پروژه': 'project',
+        'کارگاه': 'workshop',
+        'زبان': 'language',
+        'انگلیسی': 'english',
+        'فارسی': 'persian',
+        'تخصصی': 'specialized',
+        'مهارتی': 'skill',
+        'پایه': 'basic',
+        'الزامی': 'mandatory',
+        'اختیاری': 'elective',
+        'تحقیق': 'research',
+        'روش': 'method',
+        'علمی': 'scientific',
+        'کاربردی': 'applied'
+    }
+    
+    # جایگزینی کلمات فارسی با معادل انگلیسی
+    for persian, english in persian_to_english.items():
+        text = text.replace(persian, english)
+    
+    # حذف کاراکترهای فارسی باقی‌مانده
+    text = re.sub(r'[^\x00-\x7F]+', '-', text)
+    
+    # پاکسازی نهایی
+    text = _slugify_en(text)
+    
+    return text
+```
+
+### **اصلاح `parser.py` برای استفاده از تابع جدید:**
+
+**در `_create_dataframe`:**
+
+```python
+def _create_dataframe(self, courses_data: List[Course]):
+    """ایجاد DataFrame از داده‌های استخراج شده"""
+    if not courses_data:
+        print("❌ No course data extracted!")
+        self.df = pd.DataFrame()
+        return self.df
+    
+    # تبدیل Course objects به dictionaries
+    courses_dicts = [course.to_dict() for course in courses_data]
+    
+    df = pd.DataFrame(courses_dicts)
+    df = df.fillna('')
+    
+    # ایجاد نام فایل با استفاده از هر دو عنوان
+    from .utils import create_filename
+    df['en_file_name'] = df.apply(
+        lambda row: create_filename(
+            en_title=row.get('en_title', ''),
+            fa_title=row.get('fa_title', '')
+        ), 
+        axis=1
+    )
+    df['c_cat'] = df['course_type']
+    
+    self.df = df
+    
+    # ... بقیه کد
+```
+
+## **۳. ایجاد فایل `__init__.py` برای package:**
+
+**در `ds_parser/__init__.py`:**
+
+```python
+"""
+Package برای پارس و تولید مستندات برنامه درسی علوم داده
+"""
+
+__version__ = '1.0.0'
+__author__ = 'FUM DS Curriculum Team'
+
+from .parser import DSCourseParser
+from .generator import DocusaurusMarkdownGenerator
+from .summary_generator import SummaryTableGenerator
+from .utils import (
+    clean_text, 
+    remove_page_tag, 
+    create_filename,
+    get_current_timestamp,
+    extract_section_content,
+    split_course_sections
+)
+```
+
+## **۴. اسکریپت نصب وابستگی‌ها:**
+
+**فایل `requirements.txt` ایجاد کنید:**
+
+```
+pandas>=1.5.0
+jdatetime>=4.1.0  # برای تاریخ شمسی (اختیاری)
+```
+
+**یا `pyproject.toml`:**
+
+```toml
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ds-parser"
+version = "1.0.0"
+authors = [
+    {name = "FUM DS Team"}
+]
+description = "Parser for Data Science Curriculum Documents"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "pandas>=1.5.0",
+    "jdatetime>=4.1.0",
+]
+
+[project.scripts]
+ds-parser = "ds_parser.main:main"
+```
+
+## **۵. فایل اصلی `main.py` با تمام اصلاحات:**
+
+```python
+# ds_parser/main.py
+import sys
+import os
+import pandas as pd
+from pathlib import Path
+
+# اضافه کردن مسیر ماژول به sys.path
+sys.path.insert(0, str(Path(__file__).parent))
+
+from .parser import DSCourseParser
+from .generator import DocusaurusMarkdownGenerator
+from .summary_generator import SummaryTableGenerator
+from .utils import get_current_timestamp
+
+# تعریف mapping برای دسته‌بندی‌ها
+CATEGORY_MAPPING = {
+    'پایه': ('base', 'دروس پایه'),
+    'تخصصی الزامی': ('mandatory', 'دروس الزامی'),
+    'تخصصی اختیاری': ('elective', 'دروس اختیاری'),
+    'مهارتی': ('skill', 'دروس مهارتی'),
+    '': ('other', 'سایر دروس')
+}
+
+def _generate_index_file(df: pd.DataFrame, summary_file: str, generation_time: str) -> None:
+    """تولید فایل index.md برای سازماندهی بهتر"""
+    
+    # استفاده از slug انگلیسی برای لینک‌ها
+    index_content = f"""# برنامه درسی علوم داده
+
+این بخش شامل اطلاعات کامل درباره برنامه درسی رشته علوم داده می‌باشد.
+
+## بخش‌های مختلف
+
+"""
+    
+    # ایجاد لینک‌ها با slug انگلیسی
+    categories = [
+        ('base', 'دروس پایه'),
+        ('mandatory', 'دروس الزامی'),
+        ('elective', 'دروس اختیاری'),
+        ('skill', 'دروس مهارتی')
+    ]
+    
+    for english_slug, persian_title in categories:
+        index_content += f"1. **[{persian_title}](/docs/category/{english_slug})**: اطلاعات کامل هر درس به صورت جداگانه\n"
+    
+    index_content += f"""
+
+---
+
+**توجه**: جداول طبقه‌بندی شده درس‌ها از منوی سمت راست قابل دسترس هستند.
+
+## آمار کلی
+"""
+    
+    # اضافه کردن آمار کلی
+    total_courses = len(df)
+    type_counts = df['course_type'].value_counts()
+    
+    index_content += f"- تعداد کل درس‌ها: **{total_courses}**\n"
+    
+    # محاسبه انواع درس
+    type_mapping = {
+        'پایه': ('دروس پایه', 'base'),
+        'تخصصی الزامی': ('دروس الزامی', 'mandatory'),
+        'تخصصی اختیاری': ('دروس اختیاری', 'elective'),
+        'مهارتی': ('دروس مهارتی', 'skill')
+    }
+    
+    for course_type, count in type_counts.items():
+        if course_type in type_mapping:
+            persian_name, _ = type_mapping[course_type]
+            index_content += f"- تعداد {persian_name}: **{count}**\n"
+    
+    # درس‌های بدون نوع
+    if '' in type_counts:
+        index_content += f"- تعداد دروس بدون نوع: **{type_counts['']}**\n"
+    
+    # محاسبه مجموع واحدها
+    try:
+        total_units = df['units'].apply(lambda x: int(float(x)) if str(x).isdigit() else 0).sum()
+        index_content += f"- مجموع واحدها: **{total_units}**\n"
+        
+        # محاسبه میانگین واحدها
+        avg_units = total_units / total_courses if total_courses > 0 else 0
+        index_content += f"- میانگین واحد هر درس: **{avg_units:.1f}**\n"
+    except:
+        pass
+    
+    # محاسبه درس‌های با/بدون حل تمرین
+    if 'has_exercises' in df.columns:
+        has_ex = (df['has_exercises'] == 'دارد').sum()
+        no_ex = (df['has_exercises'] == 'ندارد').sum()
+        unknown_ex = total_courses - has_ex - no_ex
+        
+        index_content += f"- درس‌های با حل تمرین: **{has_ex}**\n"
+        index_content += f"- درس‌های بدون حل تمرین: **{no_ex}**\n"
+        if unknown_ex > 0:
+            index_content += f"- درس‌های با وضعیت نامشخص: **{unknown_ex}**\n"
+    
+    # اضافه کردن تاریخ تولید
+    index_content += f"""
+---
+**تاریخ تولید**: {generation_time}
+
+*این مستندات به صورت خودکار تولید شده‌اند.*
+"""
+    
+    # ایجاد فایل
+    os.makedirs('./docs', exist_ok=True)
+    with open('./docs/index.md', 'w', encoding='utf-8') as f:
+        f.write(index_content)
+    
+    print(f"✅ Index file generated at: {generation_time}")
+
+def _create_symbolic_links():
+    """ایجاد symbolic link از category/ به curriculum/"""
+    import os
+    
+    categories = ['base', 'mandatory', 'elective', 'skill', 'other']
+    
+    # ایجاد پوشه category اگر وجود ندارد
+    os.makedirs('./docs/category', exist_ok=True)
+    
+    for category in categories:
+        src = f'../curriculum/{category}'
+        dst = f'./docs/category/{category}'
+        
+        # اطمینان از وجود پوشه مبدا
+        os.makedirs(f'./docs/curriculum/{category}', exist_ok=True)
+        
+        # اگر symbolic link قبلی وجود دارد، حذف کن
+        if os.path.exists(dst):
+            if os.path.islink(dst):
+                os.unlink(dst)
+            elif os.path.isdir(dst):
+                import shutil
+                shutil.rmtree(dst)
+        
+        # ایجاد symbolic link
+        try:
+            if os.name == 'nt':  # ویندوز
+                import _winapi
+                _winapi.CreateJunction(os.path.abspath(src), dst)
+                print(f"✅ Created junction (Windows): {dst} -> {src}")
+            else:  # Linux/Mac
+                os.symlink(os.path.abspath(src), dst, target_is_directory=True)
+                print(f"✅ Created symlink: {dst} -> {src}")
+        except:
+            # اگر symbolic link نشد، پوشه را کپی کن
+            import shutil
+            if os.path.exists(src):
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+                print(f"✅ Copied directory: {src} -> {dst}")
+
+def _generate_docs_readme(df: pd.DataFrame, generation_time: str) -> None:
+    """تولید فایل repo_structure برای پوشه docs"""
+    total_courses = len(df) if df is not None else 0
+    
+    readme_content = f"""# ساختار فایلهای وبگاه برنامه درسی علوم داده
+
+این فایل‌ها به صورت خودکار توسط اسکریپت Python تولید شده‌اند.
+
+## اطلاعات تولید
+
+- **تاریخ تولید**: {generation_time}
+- **تعداد درس‌ها**: {total_courses}
+- **تولید کننده**: ds_parser v1.0.0
+
+## ساختار
+
+```
+docs/
+├── curriculum/          # فایل‌های درسی اصلی (اسلاگ انگلیسی)
+│   ├── base/           # دروس پایه
+│   ├── mandatory/      # دروس الزامی  
+│   ├── elective/       # دروس اختیاری
+│   ├── skill/         # دروس مهارتی
+│   └── other/         # سایر دروس
+├── category/           # برای نمایش در Docusaurus
+│   ├── base/          # لینک به curriculum/base/
+│   ├── mandatory/     # لینک به curriculum/mandatory/
+│   ├── elective/      # لینک به curriculum/elective/
+│   ├── skill/        # لینک به curriculum/skill/
+│   └── other/        # لینک به curriculum/other/
+├── summary-tables.md   # جداول خلاصه
+├── index.md           # صفحه اصلی
+└── repo-structure.md  # این فایل
+```
+
+## نامگذاری فایل‌ها
+
+فایل‌های درسی با اسلاگ انگلیسی ایجاد شده‌اند، مثال:
+- `calculus-i.md` برای "ریاضی عمومی ۱"
+- `statistics-and-probability.md` برای "آمار و احتمال مهندسی"
+
+---
+*این مستندات به صورت خودکار در تاریخ {generation_time} تولید شده‌اند.*
+"""
+    
+    os.makedirs('./docs', exist_ok=True)
+    with open('./docs/repo-structure.md', 'w', encoding='utf-8') as f:
+        f.write(readme_content)
+    
+    print(f"✅ Docs repo-structure generated at: {generation_time}")
+
+def main():
+    """تابع اصلی اجرای برنامه"""
+    generation_time = get_current_timestamp()
+    print(f"🕒 Generation started at: {generation_time}")
+    
+    try:
+        # 1. پارس کردن فایل
+        parser = DSCourseParser('../input/DS-Chart.md')
+        df = parser.parse_file()
+        
+        if df is None or len(df) == 0:
+            print("❌ No data extracted!")
+            return None
+        
+        # 2. تولید فایل‌های Markdown برای هر درس
+        print("\n📝 Generating individual course files...")
+        generator = DocusaurusMarkdownGenerator('./docs/curriculum/')
+        generator.generate_files(df)
+        
+        # 3. تولید جداول خلاصه
+        print("\n📊 Generating summary tables...")
+        summary_gen = SummaryTableGenerator('./docs/curriculum/')
+        
+        # جدول خلاصه اصلی
+        summary_file = summary_gen.generate_summary_tables(
+            df, 
+            output_file='./docs/summary-tables.md'
+        )
+        
+        # 4. تولید index.md
+        _generate_index_file(df, summary_file, generation_time)
+        
+        # 5. تولید README برای پوشه docs
+        _generate_docs_readme(df, generation_time)
+        
+        # 6. ایجاد symbolic links
+        _create_symbolic_links()
+        
+        print("\n" + "="*60)
+        print("✅ All processes completed successfully!")
+        print("="*60)
+        print(f"📅 Generation time: {generation_time}")
+        print(f"📁 Course files: ./docs/curriculum/")
+        print(f"📁 Category links: ./docs/category/")
+        print(f"📄 Summary tables: {summary_file}")
+        print(f"📄 Index file: ./docs/index.md")
+        print(f"📄 Structure doc: ./docs/repo-structure.md")
+        print("="*60)
+        
+        return df
+        
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return None
+
+if __name__ == "__main__":
+    main()
+```
+
+## **📦 نصب وابستگی‌ها:**
+
+```bash
+pip install jdatetime  # برای تاریخ شمسی
+```
+
+## **✅ خروجی نمونه:**
+
+در فایل‌های تولید شده خواهید دید:
+```
+---
+تاریخ تولید: 1403/10/15 - 14:30
+
+*این مستندات به صورت خودکار تولید شده‌اند.*
+```
+
+**این اصلاحات:**
+1. ✅ تاریخ و ساعت تولید را اضافه می‌کند
+2. ✅ نام فایل‌ها را به انگلیسی درست می‌کند
+3. ✅ symbolic links برای Docusaurus ایجاد می‌کند
+4. ✅ همه‌چیز با ساختار انگلیسی کار می‌کند
+
+آیا نیاز به توضیح بیشتری دارید؟

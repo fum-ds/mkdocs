@@ -4,6 +4,7 @@ import os
 import pandas as pd
 import urllib.parse
 from pathlib import Path
+from .utils import get_current_timestamp
 
 # اضافه کردن مسیر ماژول به sys.path
 sys.path.insert(0, str(Path(__file__).parent))
@@ -30,29 +31,53 @@ def _create_safe_anchor(title: str) -> str:
     
     return anchor
 
-def _generate_index_file(df: pd.DataFrame, summary_file: str, detailed_file: str) -> None:
+def _generate_index_file(df: pd.DataFrame, summary_file: str, detailed_file: str, generation_time: str) -> None:
     """تولید فایل index.md برای سازماندهی بهتر"""
-    index_content = """# برنامه درسی علوم داده
-
-این بخش شامل اطلاعات کامل درباره برنامه درسی رشته علوم داده می‌باشد.
-
-1. **[فهرست درس‌ها](category/برنامه-درسی)**: اطلاعات کامل هر درس به صورت جداگانه از منوی سمت راست قابل دسترس هست
-2. جداول دروس پایه، تخصصی (الزامی) و مهارتی هم از منوی سمت راست قابل دسترس هست.
-دروس اختیاری بعداً اضافه خواهند شد.
-
-
-"""
-# ## دسترسی سریع     
-#     # ایجاد Anchorهای ایمن برای لینک‌های داخلی
-#     section_titles = [
-#         ('دروس پایه', 'base-courses'),
-#         ('دروس الزامی', 'mandatory-courses'),
-#         ('دروس اختیاری', 'elective-courses'),
-#         ('دروس مهارتی', 'skill-courses')
-#     ]
     
-#     for persian_title, english_anchor in section_titles:
-#         index_content += f"- [{persian_title}](summary-tables#{english_anchor})\n"
+    try:
+        # خواندن محتوای فایل preface.md
+        preface_content = ""
+        preface_path = '../input/preface.md'
+        
+        if os.path.exists(preface_path):
+            with open(preface_path, 'r', encoding='utf-8') as f:
+                preface_content = f.read().strip()
+            print(f"✅ Read preface content from: {preface_path}")
+        else:
+            print(f"⚠️  Preface file not found: {preface_path}")
+            # محتوای پیش‌فرض
+            preface_content = """این بخش شامل اطلاعات کلی درباره برنامه درسی رشته علوم داده می‌باشد.
+
+**توجه**: جداول طبقه‌بندی شده درس‌ها از منوی سمت راست قابل دسترس هستند."""
+    
+    except Exception as e:
+        print(f"⚠️  Error reading preface file: {str(e)}")
+        preface_content = """این بخش شامل اطلاعات کلی درباره برنامه درسی رشته علوم داده می‌باشد.
+
+**توجه**: جداول طبقه‌بندی شده درس‌ها از منوی سمت راست قابل دسترس هستند."""
+    
+    # ساخت محتوای index با preface
+    index_content = f"""# برنامه درسی علوم داده
+
+{preface_content}
+"""
+
+# ## بخش‌های مختلف
+
+# 1. **[دروس پایه](/docs/category/base/)**: اطلاعات کامل هر درس به صورت جداگانه
+# 2. **[دروس الزامی](/docs/category/mandatory/)**: دروس تخصصی الزامی
+# 3. **[دروس اختیاری](/docs/category/elective/)**: دروس تخصصی اختیاری
+# 4. **[دروس مهارتی](/docs/category/skill/)**: دروس مهارتی و اشتغال‌پذیری
+# ## دسترسی سریع     
+    # categories = [
+    #     ('base', 'دروس پایه'),
+    #     ('mandatory', 'دروس الزامی'),
+    #     ('elective', 'دروس اختیاری'),
+    #     ('skill', 'دروس مهارتی')
+    # ]
+    
+    # for english_slug, persian_title in categories:
+    #     index_content += f"1. **[{persian_title}](/docs/category/{english_slug})**: اطلاعات کامل هر درس به صورت جداگانه\n"
     
     index_content += "\n## آمار کلی\n\n"
     
@@ -102,9 +127,11 @@ def _generate_index_file(df: pd.DataFrame, summary_file: str, detailed_file: str
             index_content += f"- درس‌های با وضعیت نامشخص: **{unknown_ex}**\n"
     
     # اضافه کردن لینک‌های بیشتر
-    index_content += """
+    index_content += f"""
 ---
-*آخرین به‌روزرسانی: به صورت خودکار تولید شده*
+**تاریخ تولید**: {generation_time}
+
+*این مستندات به صورت خودکار تولید شده‌اند.*
 """
     
     # ایجاد فایل
@@ -193,9 +220,11 @@ def _simplify_detailed_summary(file_path: str) -> None:
     except Exception as e:
         print(f"⚠️  Could not simplify detailed-summary: {str(e)}")
 
+
 def main():
     """تابع اصلی اجرای برنامه"""
-    print("🔍 Starting DS Course Parser...")
+    generation_time = get_current_timestamp()
+    print(f"🚀 Starting generation at: {generation_time}")
     
     try:
         # 1. پارس کردن فایل
@@ -214,44 +243,33 @@ def main():
         # 3. تولید جداول خلاصه
         print("\n📊 Generating summary tables...")
         summary_gen = SummaryTableGenerator('./docs/curriculum/')
-        
-        # جدول خلاصه اصلی
         summary_file = summary_gen.generate_summary_tables(
             df, 
             output_file='./docs/summary-tables.md'
         )
         
-        # 4. به‌روزرسانی Anchorها در summary-tables
-        _update_summary_tables_anchors(summary_file)
+        # 4. تولید index.md با تاریخ
+        _generate_index_file(df, summary_file, '', generation_time)
         
-        # خلاصه دقیق (ابتدا کامل تولید می‌شود، سپس ساده می‌شود)
-        detailed_file = './docs/detailed-summary.md'
+        # 5. تولید category configs
+        _generate_category_json(generation_time)
         
-        # # 5. ایجاد detailed-summary ساده شده
-        # _simplify_detailed_summary(detailed_file)
+        # 6. تولید README
+        _generate_docs_readme(df, generation_time)
         
-        # 6. تولید index.md برای داکساروس
-        _generate_index_file(df, summary_file, detailed_file)
-        
-        # 7. تولید README برای پوشه docs
-        _generate_docs_readme(df)
-        
-        # 8. تولید فایل _category_.json برای دسته‌بندی
-        _generate_category_json()
-        
-        print("\n" + "="*50)
-        print("✅ All processes completed successfully!")
-        print("="*50)
-        print(f"📁 Course files: ./docs/curriculum/")
-        print(f"📄 Summary tables (with anchors): {summary_file}")
-        # print(f"📄 Detailed summary (simplified): {detailed_file}")
-        print(f"📄 Index file: ./docs/index.md")
-        print(f"📄 Docs repo-structure: ./docs/repo-structure.md")
-        print(f"📄 Category config: ./docs/curriculum/_category_.json")
-        print("="*50)
-        print("\n📌 Important: Anchor links in summary-tables.md have been updated")
-        # print("📌 Important: detailed-summary.md contains only statistics")
-        print("="*50)
+        print("\n" + "="*60)
+        print("✅ GENERATION COMPLETE!")
+        print("="*60)
+        print(f"📅 Generated at: {generation_time}")
+        print(f"📚 Total courses: {len(df)}")
+        print(f"📁 English folders: base/, mandatory/, elective/, skill/, other/")
+        print(f"🌐 Access URLs:")
+        print(f"   - /docs/category/curriculum/")
+        print(f"   - /docs/category/base/")
+        print(f"   - /docs/category/mandatory/")
+        print(f"   - /docs/category/elective/")
+        print(f"   - /docs/category/skill/")
+        print("="*60)
         
         return df
         
@@ -260,84 +278,130 @@ def main():
         import traceback
         traceback.print_exc()
         return None
-
-def _generate_docs_readme(df: pd.DataFrame) -> None:
+    
+def _generate_docs_readme(df: pd.DataFrame, generation_time: str) -> None:
     """تولید فایل repo_structure برای پوشه docs"""
-    readme_content = """# ساختار فایلهای وبگاه برنامه درسی علوم داده
+    readme_content = f"""# ساختار فایلهای وبگاه برنامه درسی علوم داده
 
-این پوشه حاوی تمام مستندات تولید شده برای برنامه درسی علوم داده می‌باشد.
+این فایل‌ها به صورت خودکار توسط اسکریپت Python تولید شده‌اند.
 
-## فایل‌های موجود
+## اطلاعات تولید
 
-### 1. فایل‌های درسی (`curriculum/`)
-هر درس در یک فایل Markdown جداگانه قرار دارد که به صورت خودکار در دسته‌بندی "برنامه درسی" سازماندهی شده‌اند.
-
-### 2. جداول خلاصه (`summary-tables.md`)
-جداول طبقه‌بندی شده بر اساس نوع درس با لینک به صفحات هر درس. دارای Anchorهای مستقیم برای دسترسی سریع.
-
-### 3. صفحه اصلی (`index.md`)
-صفحه اصلی با دسترسی سریع به تمام بخش‌ها.
+- **تاریخ تولید**: {generation_time}
+- **تعداد درس‌ها**: {len(df) if df is not None else 'نامشخص'}
 
 ## ساختار
 
+
 ```
 docs/
-├── curriculum/ # فایل‌های درسی (دسته‌بندی شده)
-│ ├── base/ # دروس پایه
-│ ├── mandatory/ # دروس الزامی
-│ ├── elective/ # دروس اختیاری
-│ ├── skill/ # دروس مهارتی
-│ ├── other/ # دروس بدون نوع
-│ └── category.json # پیکربندی دسته‌بندی
-├── summary-tables.md # جداول خلاصه با Anchorها
-├── detailed-summary.md # آمار کلی
-├── index.md # صفحه اصلی
-└── repo_structure.md # این فایل
+├── curriculum/          # فایل‌های درسی اصلی (انگلیسی)
+│   ├── base/           # دروس پایه
+│   ├── mandatory/      # دروس الزامی  
+│   ├── elective/       # دروس اختیاری
+│   ├── skill/         # دروس مهارتی
+│   └── other/         # سایر دروس
+├── category/           # برای نمایش در Docusaurus (symlinks)
+│   ├── base/          # -> ../curriculum/base/
+│   ├── mandatory/     # -> ../curriculum/mandatory/
+│   ├── elective/      # -> ../curriculum/elective/
+│   ├── skill/        # -> ../curriculum/skill/
+│   └── other/        # -> ../curriculum/other/
+├── summary-tables.md   # جداول خلاصه
+├── index.md           # صفحه اصلی
+└── repo-structure.md  # این فایل
 ```
 
-## Anchorهای مستقیم
-
-برای دسترسی سریع به بخش‌های مختلف جداول خلاصه:
-
-- `/docs/summary-tables#base-courses` - دروس پایه
-- `/docs/summary-tables#mandatory-courses` - دروس الزامی
-- `/docs/summary-tables#elective-courses` - دروس اختیاری
-- `/docs/summary-tables#skill-courses` - دروس مهارتی
-- `/docs/summary-tables#other-courses` - دروس بدون نوع
-
-## نحوه استفاده
-
-این فایل‌ها به صورت خودکار در سایت Docusaurus نمایش داده می‌شوند.
-
 ---
-*این مستندات به صورت خودکار تولید شده‌اند.*
+*این مستندات به صورت خودکار در تاریخ {generation_time} تولید شده‌اند.*
 """
     
     os.makedirs('./docs', exist_ok=True)
     with open('./docs/repo-structure.md', 'w', encoding='utf-8') as f:
         f.write(readme_content)
     
-    print("✅ Docs repo-structure generated: ./docs/repo-structure.md")
+    print(f"✅ Docs repo-structure generated at: {generation_time}")
 
-def _generate_category_json() -> None:
+def _generate_category_json(generation_time: str) -> None:
     """تولید فایل _category_.json برای دسته‌بندی Docusaurus"""
-    category_content = {
+    
+    # دسته‌بندی‌های انگلیسی
+    categories = [
+        {
+            "slug": "curriculum",
+            "label": "برنامه درسی",
+            "position": 1,
+            "description": "برنامه درسی کامل رشته علوم داده"
+        },
+        {
+            "slug": "base", 
+            "label": "دروس پایه",
+            "position": 2,
+            "description": "دروس پایه رشته علوم داده"
+        },
+        {
+            "slug": "mandatory",
+            "label": "دروس الزامی", 
+            "position": 3,
+            "description": "دروس تخصصی الزامی"
+        },
+        {
+            "slug": "skill",
+            "label": "دروس مهارتی",
+            "position": 4,
+            "description": "دروس مهارتی و اشتغال‌پذیری"
+        },
+        {
+            "slug": "elective",
+            "label": "دروس اختیاری",
+            "position": 5, 
+            "description": "دروس تخصصی اختیاری"
+        }
+    ]
+    
+    import json
+    import os
+    
+    # ایجاد پوشه category
+    os.makedirs('./docs/category', exist_ok=True)
+    
+    for category in categories:
+        category_dir = f'./docs/category/{category["slug"]}'
+        os.makedirs(category_dir, exist_ok=True)
+        
+        category_content = {
+            "label": category["label"],
+            "position": category["position"],
+            "link": {
+                "type": "generated-index",
+                "description": category["description"],
+                "slug": f"/category/{category['slug']}"
+            },
+            "collapsed": False,
+            "customProps": {
+                "generated": generation_time
+            }
+        }
+        
+        with open(f'{category_dir}/_category_.json', 'w', encoding='utf-8') as f:
+            json.dump(category_content, f, ensure_ascii=False, indent=2)
+        
+        print(f"✅ Category config: {category_dir}/_category_.json")
+    
+    # همچنین یک فایل _category_.json در روت category ایجاد کنید
+    root_category = {
         "label": "برنامه درسی",
-        "position": 2,
+        "position": 1,
         "link": {
             "type": "generated-index",
-            "description": "برنامه درسی کامل رشته علوم داده",
-            "slug": "/category/برنامه-درسی"
+            "description": "دسته‌بندی کامل دروس علوم داده",
+            "slug": "/category/curriculum"
         },
         "collapsed": False
     }
     
-    os.makedirs('./docs/curriculum', exist_ok=True)
-    import json
-    with open('./docs/curriculum/_category_.json', 'w', encoding='utf-8') as f:
-        json.dump(category_content, f, ensure_ascii=False, indent=2)
-    
-    print("✅ Category config generated: ./docs/curriculum/_category_.json")
+    with open('./docs/category/_category_.json', 'w', encoding='utf-8') as f:
+        json.dump(root_category, f, ensure_ascii=False, indent=2)
 
 if __name__ == "__main__":
     main()

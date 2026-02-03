@@ -2,7 +2,28 @@
 import re
 import pandas as pd
 from typing import List, Dict
+import datetime
 
+def get_current_timestamp() -> str:
+    """دریافت تاریخ و زمان فعلی به صورت فرمت شده"""
+    now = datetime.datetime.now()
+    
+    # فرمت فارسی
+    jalali_date = _convert_to_jalali(now)
+    
+    return f"{jalali_date} - {now.strftime('%H:%M')}"
+
+def _convert_to_jalali(gregorian_date: datetime.datetime) -> str:
+    """تبدیل تاریخ میلادی به شمسی (ساده شده)"""
+    # در صورت نصب بودن jdatetime:
+    try:
+        import jdatetime
+        jalali = jdatetime.datetime.fromgregorian(datetime=gregorian_date)
+        return jalali.strftime("%Y/%m/%d")
+    except ImportError:
+        # اگر jdatetime نصب نیست، از تاریخ میلادی استفاده کن
+        return gregorian_date.strftime("%Y/%m/%d")
+    
 def clean_text(text: str, keep_newlines: bool = False, remove_br: bool = True) -> str:
     """تمیز کردن متن از تگ‌های HTML و کاراکترهای اضافی"""
     if not text or pd.isna(text) or text == 'nan':

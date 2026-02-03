@@ -1,0 +1,10 @@
+{
+  "label": "برنامه درسی",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "دسته‌بندی کامل دروس علوم داده",
+    "slug": "/category/curriculum"
+  },
+  "collapsed": false
+}

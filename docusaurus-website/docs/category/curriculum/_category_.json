@@ -1,0 +1,13 @@
+{
+  "label": "برنامه درسی",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "description": "برنامه درسی کامل رشته علوم داده",
+    "slug": "/category/curriculum"
+  },
+  "collapsed": false,
+  "customProps": {
+    "generated": "1404/11/14 - 08:31"
+  }
+}

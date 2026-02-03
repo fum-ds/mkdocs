@@ -1,0 +1,13 @@
+{
+  "label": "دروس الزامی",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "description": "دروس تخصصی الزامی",
+    "slug": "/category/mandatory"
+  },
+  "collapsed": false,
+  "customProps": {
+    "generated": "1404/11/14 - 08:31"
+  }
+}

@@ -4,16 +4,24 @@ import pandas as pd
 from typing import List, Dict
 from .models import Course
 
+# ds_parser/generator.py
+import os
+import pandas as pd
+from typing import List, Dict
+from .models import Course
+
 class DocusaurusMarkdownGenerator:
     """تولید کننده فایل‌های Markdown برای Docusaurus"""
     
     def __init__(self, base_path: str = './docs/curriculum/'):
         self.base_path = base_path
+        # تغییر: استفاده از نام انگلیسی برای پوشه‌ها
         self.subfolders = {
             'پایه': 'base',
             'تخصصی الزامی': 'mandatory',
             'تخصصی اختیاری': 'elective',
-            'مهارتی': 'skill'
+            'مهارتی': 'skill',
+            '': 'other'  # برای دروس بدون نوع
         }
         self.course_mapping: Dict[str, Dict] = {}
     
@@ -24,6 +32,7 @@ class DocusaurusMarkdownGenerator:
             return
         
         print(f"\n🎯 Generating files for {len(df)} courses...")
+        print(f"📁 Folder structure: {self.subfolders}")
         
         df = df.fillna('')
         self._create_course_mapping(df)
