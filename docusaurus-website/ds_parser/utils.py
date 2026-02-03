@@ -3,6 +3,78 @@ import re
 import pandas as pd
 from typing import List, Dict
 import datetime
+import unicodedata
+
+def persian_sort_key(text: str) -> str:
+        """ایجاد کلید مرتب‌سازی برای متن فارسی با رعایت ترتیب صحیح"""
+        if not text or pd.isna(text):
+            return ''
+        
+        text = str(text).strip()
+        
+        # نرمال‌سازی Unicode (تبدیل به فرم NFC)
+        text = unicodedata.normalize('NFC', text)
+        
+        # تبدیل به حروف کوچک
+        text = text.lower()
+        
+        # جایگزینی حروف برای مرتب‌سازی صحیح
+        # کلید: «آ» باید قبل از «ا» بیاید
+        sort_mapping = {
+            'آ': 'ا' + chr(1),  # chr(1) کاراکتر کنترل که قبل از همه می‌آید
+            'أ': 'ا' + chr(2),
+            'إ': 'ا' + chr(3),
+            'ا': 'ا' + chr(4),
+            'ب': 'ب',
+            'پ': 'پ',
+            'ت': 'ت',
+            'ث': 'ث',
+            'ج': 'ج',
+            'چ': 'چ',
+            'ح': 'ح',
+            'خ': 'خ',
+            'د': 'د',
+            'ذ': 'ذ',
+            'ر': 'ر',
+            'ز': 'ز',
+            'ژ': 'ژ',
+            'س': 'س',
+            'ش': 'ش',
+            'ص': 'ص',
+            'ض': 'ض',
+            'ط': 'ط',
+            'ظ': 'ظ',
+            'ع': 'ع',
+            'غ': 'غ',
+            'ف': 'ف',
+            'ق': 'ق',
+            'ک': 'ک',
+            'گ': 'گ',
+            'ل': 'ل',
+            'م': 'م',
+            'ن': 'ن',
+            'و': 'و',
+            'ه': 'ه',
+            'ی': 'ی',
+            'ئ': 'ی' + chr(2),
+            'ؤ': 'و' + chr(2),
+            'ة': 'ه',
+            'ك': 'ک',
+            'ى': 'ی',
+        }
+        
+        # تبدیل متن با نگاشت
+        result = []
+        for char in text:
+            if char in sort_mapping:
+                result.append(sort_mapping[char])
+            elif char.isalpha():
+                # برای حروف دیگر (مثلاً انگلیسی)
+                result.append(char)
+            elif char.isspace():
+                result.append(' ')
+        
+        return ''.join(result)
 
 def get_current_timestamp() -> str:
     """دریافت تاریخ و زمان فعلی به صورت فرمت شده"""

@@ -3,6 +3,8 @@ import os
 import pandas as pd
 from typing import Dict, List, Tuple
 from pathlib import Path
+import unicodedata
+from .utils import persian_sort_key  
 
 class SummaryTableGenerator:
     """تولید کننده جداول خلاصه درس‌ها بر اساس نوع"""
@@ -85,14 +87,17 @@ class SummaryTableGenerator:
     
     def _create_type_table(self, courses_df: pd.DataFrame, course_type: str, 
                           folder: str, title: str, all_courses_df: pd.DataFrame) -> Tuple[str, int]:
-        """ایجاد جدول برای یک نوع درس خاص"""
-        # مرتب‌سازی بر اساس موقعیت در سایدبار
-        if 'position' in courses_df.columns:
-            courses_df = courses_df.sort_values('position')
+        """ایجاد جدول برای یک نوع درس خاص با مرتب‌سازی الفبایی فارسی"""
+        
+        # ✅ تغییر: مرتب‌سازی بر اساس حروف الفبای فارسی
+        courses_df = self._sort_by_persian_alphabet(courses_df)
         
         # ایجاد ردیف‌های جدول
         table_rows = []
         total_units = 0
+        
+        # شمارنده موقعیت برای نمایش ترتیب
+        position_counter = 1
         
         for _, row in courses_df.iterrows():
             fa_title = str(row['fa_title']).strip()
@@ -112,10 +117,12 @@ class SummaryTableGenerator:
                 title_cell = fa_title
             
             # فرمت‌بندی پیش‌نیازها با لینک
-            # ✅ پاس دادن all_courses_df به جای courses_df
             prereq_formatted = self._format_prerequisites_for_table(
                 prerequisites, all_courses_df, folder
             )
+            
+            # ✅ اضافه کردن شماره ردیف (اختیاری)
+            # title_cell = f"{position_counter}. {title_cell}"
             
             # اضافه کردن ردیف
             table_rows.append(f'|{title_cell}|{prereq_formatted}|{units}|')
@@ -126,6 +133,8 @@ class SummaryTableGenerator:
                     total_units += int(float(units))
             except (ValueError, TypeError):
                 pass
+            
+            position_counter += 1
         
         # اگر هیچ درسی نداریم، جدول خالی برمی‌گردانیم
         if not table_rows:
@@ -140,8 +149,31 @@ class SummaryTableGenerator:
             f'| **مجموع تعداد واحد** |**{title}**|**{total_units}**|'
         ]
         
+        # نمایش ترتیب مرتب‌سازی شده
+        print(f"  📋 {title}: {len(courses_df)} درس (مرتب شده بر اساس الفبای فارسی)")
+        
         return '\n'.join(table_content), total_units
     
+    def _sort_by_persian_alphabet(self, df: pd.DataFrame) -> pd.DataFrame:
+        """مرتب‌سازی DataFrame بر اساس حروف الفبای فارسی"""
+        if len(df) == 0:
+            return df
+        
+        # کپی DataFrame
+        df_sorted = df.copy()
+        
+        # ایجاد ستون برای کلید مرتب‌سازی
+        df_sorted['sort_key'] = df_sorted['fa_title'].apply(persian_sort_key)
+        
+        # مرتب‌سازی بر اساس کلید
+        df_sorted = df_sorted.sort_values('sort_key')
+        
+        # حذف ستون موقت
+        df_sorted = df_sorted.drop('sort_key', axis=1)
+        
+        return df_sorted
+
+
     def _format_prerequisites_for_table(self, prereq_str: str, 
                                       all_courses_df: pd.DataFrame, 
                                       current_folder: str) -> str:
@@ -241,16 +273,18 @@ class SummaryTableGenerator:
             type_courses = df[df['course_type'] == course_type].copy()
             
             if len(type_courses) > 0:
-                # ✅ پاس دادن df کامل
+                # ✅ مرتب‌سازی الفبایی برای detailed tables هم
+                type_courses_sorted = self._sort_by_persian_alphabet(type_courses)
                 sections.append(self._create_detailed_type_table(
-                    type_courses, title, folder, df
+                    type_courses_sorted, title, folder, df
                 ))
         
         # دروس بدون نوع
         other_courses = df[df['course_type'] == ''].copy()
         if len(other_courses) > 0:
+            other_courses_sorted = self._sort_by_persian_alphabet(other_courses)
             sections.append(self._create_detailed_type_table(
-                other_courses, 'دروس بدون نوع', 'other', df
+                other_courses_sorted, 'دروس بدون نوع', 'other', df
             ))
         
         # ایجاد فایل
@@ -303,12 +337,13 @@ class SummaryTableGenerator:
     
     def _create_detailed_type_table(self, courses_df: pd.DataFrame, title: str, 
                                    folder: str, all_courses_df: pd.DataFrame) -> str:
-        """ایجاد جدول دقیق برای یک نوع درس"""
-        if 'position' in courses_df.columns:
-            courses_df = courses_df.sort_values('position')
+        """ایجاد جدول دقیق برای یک نوع درس (مرتب شده الفبایی)"""
+        # ✅ مرتب‌سازی از قبل انجام شده
         
         table_rows = []
         total_units = 0
+        
+        position_counter = 1
         
         for _, row in courses_df.iterrows():
             fa_title = str(row['fa_title']).strip()
@@ -328,6 +363,9 @@ class SummaryTableGenerator:
                 title_cell = f'[{fa_title}]({link})'
             else:
                 title_cell = fa_title
+            
+            # ✅ اضافه کردن شماره ردیف (اختیاری)
+            # title_cell = f"{position_counter}. {title_cell}"
             
             # فرمت‌بندی پیش‌نیازها
             prereq_formatted = self._format_prerequisites_for_table(
@@ -354,6 +392,8 @@ class SummaryTableGenerator:
             
             # اضافه کردن ردیف
             table_rows.append(f'|{title_cell}|{prereq_formatted}|{info_cell}|')
+            
+            position_counter += 1
         
         if not table_rows:
             return f'## {title}\n\n*(هیچ درسی یافت نشد)*\n'
@@ -377,3 +417,14 @@ class SummaryTableGenerator:
             'مهارتی': 'دروس مهارتی'
         }
         return type_mapping.get(course_type, course_type)
+    
+    def _print_sorting_sample(self, df: pd.DataFrame, course_type: str, title: str):
+        """نمایش نمونه‌ای از مرتب‌سازی الفبایی"""
+        type_courses = df[df['course_type'] == course_type].copy()
+        if len(type_courses) > 0:
+            sorted_courses = self._sort_by_persian_alphabet(type_courses)
+            print(f"\n🔤 {title} - مرتب‌سازی الفبایی:")
+            for i, (_, row) in enumerate(sorted_courses.head(5).iterrows(), 1):
+                print(f"  {i}. {row['fa_title']}")
+            if len(sorted_courses) > 5:
+                print(f"  ... و {len(sorted_courses) - 5} درس دیگر")

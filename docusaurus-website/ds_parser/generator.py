@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from typing import List, Dict
 from .models import Course
+from .utils import persian_sort_key  
 
 class DocusaurusMarkdownGenerator:
     """تولید کننده فایل‌های Markdown برای Docusaurus"""
@@ -65,31 +66,31 @@ class DocusaurusMarkdownGenerator:
         """محاسبه موقعیت درس‌ها در سایدبار بر اساس حروف الفبای فارسی (ساده)"""
         
         # ترتیب حروف فارسی برای مرتب‌سازی
-        persian_alphabet = 'آ ا ب پ ت ث ج چ ح خ د ذ ر ز ژ س ش ص ض ط ظ ع غ ف ق ک گ ل م ن و ه ی'
+        # persian_alphabet = 'آ ا ب پ ت ث ج چ ح خ د ذ ر ز ژ س ش ص ض ط ظ ع غ ف ق ک گ ل م ن و ه ی'
         
-        def persian_sort_key(text: str) -> str:
-            """ایجاد کلید مرتب‌سازی برای متن فارسی"""
-            if not text or pd.isna(text):
-                return ''
+        # def persian_sort_key(text: str) -> str:
+        #     """ایجاد کلید مرتب‌سازی برای متن فارسی"""
+        #     if not text or pd.isna(text):
+        #         return ''
             
-            text = str(text).strip()
+        #     text = str(text).strip()
             
-            # تبدیل به حروف کوچک (برای یکسان‌سازی)
-            text = text.lower()
+        #     # تبدیل به حروف کوچک (برای یکسان‌سازی)
+        #     text = text.lower()
             
-            # جایگزینی همزه و عین
-            replacements = {
-                'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ئ': 'ی', 'ة': 'ه',
-                'ك': 'ک', 'ى': 'ی', 'ؤ': 'و', 'ء': ''
-            }
+        #     # جایگزینی همزه و عین
+        #     replacements = {
+        #         'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ئ': 'ی', 'ة': 'ه',
+        #         'ك': 'ک', 'ى': 'ی', 'ؤ': 'و', 'ء': ''
+        #     }
             
-            for old, new in replacements.items():
-                text = text.replace(old, new)
+        #     for old, new in replacements.items():
+        #         text = text.replace(old, new)
             
-            # حذف فاصله و علائم نگارشی
-            text = ''.join(c for c in text if c.isalpha() or c.isspace())
+        #     # حذف فاصله و علائم نگارشی
+        #     text = ''.join(c for c in text if c.isalpha() or c.isspace())
             
-            return text
+        #     return text
         
         positions = []
         df_local = df.copy()
