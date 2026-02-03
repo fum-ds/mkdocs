@@ -1,6 +1,4 @@
 
-https://ihweb.ir/oauth/index.php/u/create_account
+docusaurus-website>npm run build
 
-
-سایت زیر یک اعتبار ۵۰۰ تومانی میده و یک ماه ش ۶۰۰ تومان هست که باید یک پرداخت اولیه داشته باشیم
-https://console.liara.ir/
+docusaurus-website>npm run serve
