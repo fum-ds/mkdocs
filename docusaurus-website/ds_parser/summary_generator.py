@@ -15,6 +15,8 @@ class SummaryTableGenerator:
             'تخصصی اختیاری': ('elective', 'دروس اختیاری'),
             'مهارتی': ('skill', 'دروس مهارتی')
         }
+        # اضافه کردن نگاشت عنوان فارسی به اطلاعات درس
+        self.course_mapping: Dict[str, Dict] = {}
     
     def generate_summary_tables(self, df: pd.DataFrame, output_file: str = './docs/summary-tables.md'):
         """تولید فایل Markdown حاوی جداول خلاصه"""
@@ -22,6 +24,9 @@ class SummaryTableGenerator:
         
         # اطمینان از string بودن مقادیر
         df = df.fillna('')
+        
+        # ایجاد نگاشت عنوان فارسی به اطلاعات درس
+        self._create_course_mapping(df)
         
         # ایجاد محتوای جداول
         tables_content = []
@@ -34,14 +39,18 @@ class SummaryTableGenerator:
             type_courses = df[df['course_type'] == course_type].copy()
             
             if len(type_courses) > 0:
-                table_content, total_units = self._create_type_table(type_courses, course_type, folder, title)
+                table_content, total_units = self._create_type_table(
+                    type_courses, course_type, folder, title, df
+                )
                 tables_content.append(table_content)
                 total_units_all += total_units
         
         # اضافه کردن جدول دروس بدون نوع (other)
         other_courses = df[df['course_type'] == ''].copy()
         if len(other_courses) > 0:
-            table_content, total_units = self._create_type_table(other_courses, '', 'other', 'دروس بدون نوع')
+            table_content, total_units = self._create_type_table(
+                other_courses, '', 'other', 'دروس بدون نوع', df
+            )
             tables_content.append(table_content)
             total_units_all += total_units
         
@@ -59,7 +68,23 @@ class SummaryTableGenerator:
         
         return output_file
     
-    def _create_type_table(self, courses_df: pd.DataFrame, course_type: str, folder: str, title: str) -> Tuple[str, int]:
+    def _create_course_mapping(self, df: pd.DataFrame):
+        """ایجاد نگاشت عنوان فارسی به اطلاعات درس"""
+        for _, row in df.iterrows():
+            fa_title = str(row['fa_title']).strip()
+            en_file_name = str(row['en_file_name']).strip()
+            course_type = str(row['course_type']).strip()
+            
+            if fa_title and fa_title != 'nan' and en_file_name:
+                self.course_mapping[fa_title] = {
+                    'file_name': en_file_name,
+                    'course_type': course_type
+                }
+        
+        print(f"📚 Created {len(self.course_mapping)} course mappings for summary tables")
+    
+    def _create_type_table(self, courses_df: pd.DataFrame, course_type: str, 
+                          folder: str, title: str, all_courses_df: pd.DataFrame) -> Tuple[str, int]:
         """ایجاد جدول برای یک نوع درس خاص"""
         # مرتب‌سازی بر اساس موقعیت در سایدبار
         if 'position' in courses_df.columns:
@@ -78,15 +103,19 @@ class SummaryTableGenerator:
             if not fa_title or fa_title == 'nan':
                 continue
             
-            # ایجاد لینک به صفحه درس (بدون عنوان انگلیسی)
+            # ایجاد لینک به صفحه درس
             if en_file_name and en_file_name != 'nan':
-                link = f'curriculum/{folder}/{en_file_name}.md'
+                # ✅ لینک صحیح (مطلق از روت سایت)
+                link = f'/docs/curriculum/{folder}/{en_file_name}.md'
                 title_cell = f'[{fa_title}]({link})'
             else:
                 title_cell = fa_title
             
             # فرمت‌بندی پیش‌نیازها با لینک
-            prereq_formatted = self._format_prerequisites_for_table(prerequisites, courses_df, folder)
+            # ✅ پاس دادن all_courses_df به جای courses_df
+            prereq_formatted = self._format_prerequisites_for_table(
+                prerequisites, all_courses_df, folder
+            )
             
             # اضافه کردن ردیف
             table_rows.append(f'|{title_cell}|{prereq_formatted}|{units}|')
@@ -113,8 +142,10 @@ class SummaryTableGenerator:
         
         return '\n'.join(table_content), total_units
     
-    def _format_prerequisites_for_table(self, prereq_str: str, courses_df: pd.DataFrame, current_folder: str) -> str:
-        """فرمت‌بندی پیش‌نیازها برای جدول خلاصه"""
+    def _format_prerequisites_for_table(self, prereq_str: str, 
+                                      all_courses_df: pd.DataFrame, 
+                                      current_folder: str) -> str:
+        """فرمت‌بندی پیش‌نیازها برای جدول خلاصه (با جستجو در تمام دروس)"""
         if not prereq_str or prereq_str in ['ندارد', 'nan']:
             return 'ندارد'
         
@@ -132,20 +163,45 @@ class SummaryTableGenerator:
         # ایجاد لینک برای هر پیش‌نیاز
         linked_prereqs = []
         for prereq in prereqs:
-            # جستجوی پیش‌نیاز در بین دروس
+            # جستجوی پیش‌نیاز در بین تمام دروس
             found = False
-            for _, course_row in courses_df.iterrows():
-                if str(course_row['fa_title']).strip() == prereq:
-                    en_file_name = str(course_row['en_file_name']).strip()
-                    course_type = str(course_row['course_type']).strip()
-                    
-                    if en_file_name and en_file_name != 'nan':
-                        # تعیین پوشه بر اساس نوع درس
-                        folder = self.subfolders.get(course_type, ('other', ''))[0]
-                        link = f'docs/curriculum/{folder}/{en_file_name}.md'
-                        linked_prereqs.append(f'[{prereq}]({link})')
-                        found = True
-                        break
+            
+            # روش ۱: جستجو در course_mapping (سریع‌تر)
+            if prereq in self.course_mapping:
+                course_info = self.course_mapping[prereq]
+                course_type = course_info['course_type']
+                
+                # تعیین پوشه بر اساس نوع درس
+                if course_type in self.subfolders:
+                    folder = self.subfolders[course_type][0]
+                else:
+                    folder = 'other'
+                
+                file_name = course_info['file_name']
+                # ✅ لینک صحیح
+                link = f'/docs/curriculum/{folder}/{file_name}.md'
+                linked_prereqs.append(f'[{prereq}]({link})')
+                found = True
+            
+            # روش ۲: جستجو در all_courses_df (برای اطمینان)
+            if not found:
+                for _, course_row in all_courses_df.iterrows():
+                    if str(course_row['fa_title']).strip() == prereq:
+                        en_file_name = str(course_row['en_file_name']).strip()
+                        course_type = str(course_row['course_type']).strip()
+                        
+                        if en_file_name and en_file_name != 'nan':
+                            # تعیین پوشه بر اساس نوع درس
+                            if course_type in self.subfolders:
+                                folder = self.subfolders[course_type][0]
+                            else:
+                                folder = 'other'
+                            
+                            # ✅ لینک صحیح
+                            link = f'/docs/curriculum/{folder}/{en_file_name}.md'
+                            linked_prereqs.append(f'[{prereq}]({link})')
+                            found = True
+                            break
             
             # اگر پیدا نشد، بدون لینک نمایش داده شود
             if not found:
@@ -170,6 +226,9 @@ class SummaryTableGenerator:
         
         df = df.fillna('')
         
+        # ایجاد نگاشت
+        self._create_course_mapping(df)
+        
         sections = []
         sections.append('# خلاصه دقیق برنامه درسی\n')
         
@@ -182,12 +241,17 @@ class SummaryTableGenerator:
             type_courses = df[df['course_type'] == course_type].copy()
             
             if len(type_courses) > 0:
-                sections.append(self._create_detailed_type_table(type_courses, title, folder))
+                # ✅ پاس دادن df کامل
+                sections.append(self._create_detailed_type_table(
+                    type_courses, title, folder, df
+                ))
         
         # دروس بدون نوع
         other_courses = df[df['course_type'] == ''].copy()
         if len(other_courses) > 0:
-            sections.append(self._create_detailed_type_table(other_courses, 'دروس بدون نوع', 'other'))
+            sections.append(self._create_detailed_type_table(
+                other_courses, 'دروس بدون نوع', 'other', df
+            ))
         
         # ایجاد فایل
         os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -237,7 +301,8 @@ class SummaryTableGenerator:
         
         return '\n'.join(stats_lines)
     
-    def _create_detailed_type_table(self, courses_df: pd.DataFrame, title: str, folder: str) -> str:
+    def _create_detailed_type_table(self, courses_df: pd.DataFrame, title: str, 
+                                   folder: str, all_courses_df: pd.DataFrame) -> str:
         """ایجاد جدول دقیق برای یک نوع درس"""
         if 'position' in courses_df.columns:
             courses_df = courses_df.sort_values('position')
@@ -256,15 +321,18 @@ class SummaryTableGenerator:
             if not fa_title or fa_title == 'nan':
                 continue
             
-            # ایجاد لینک (بدون عنوان انگلیسی)
+            # ایجاد لینک
             if en_file_name and en_file_name != 'nan':
-                link = f'docs/curriculum/{folder}/{en_file_name}.md'
+                # ✅ لینک صحیح
+                link = f'/docs/curriculum/{folder}/{en_file_name}.md'
                 title_cell = f'[{fa_title}]({link})'
             else:
                 title_cell = fa_title
             
             # فرمت‌بندی پیش‌نیازها
-            prereq_formatted = self._format_prerequisites_for_table(prerequisites, courses_df, folder)
+            prereq_formatted = self._format_prerequisites_for_table(
+                prerequisites, all_courses_df, folder
+            )
             
             # اطلاعات اضافی (بدون استفاده از HTML)
             additional_info = []
