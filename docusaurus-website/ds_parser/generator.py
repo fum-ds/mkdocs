@@ -62,24 +62,72 @@ class DocusaurusMarkdownGenerator:
         print(f"📚 Created {valid_mappings} course mappings")
     
     def _calculate_positions(self, df: pd.DataFrame) -> List[int]:
-        """محاسبه موقعیت درس‌ها در سایدبار"""
-        positions = []
-        position_counter = {}
+        """محاسبه موقعیت درس‌ها در سایدبار بر اساس حروف الفبای فارسی (ساده)"""
         
-        for _, row in df.iterrows():
-            course_type = str(row['course_type']).strip()
-            if not course_type or course_type == 'nan':
-                course_type = 'other'
+        # ترتیب حروف فارسی برای مرتب‌سازی
+        persian_alphabet = 'آ ا ب پ ت ث ج چ ح خ د ذ ر ز ژ س ش ص ض ط ظ ع غ ف ق ک گ ل م ن و ه ی'
+        
+        def persian_sort_key(text: str) -> str:
+            """ایجاد کلید مرتب‌سازی برای متن فارسی"""
+            if not text or pd.isna(text):
+                return ''
             
-            if course_type not in position_counter:
-                position_counter[course_type] = 1
+            text = str(text).strip()
+            
+            # تبدیل به حروف کوچک (برای یکسان‌سازی)
+            text = text.lower()
+            
+            # جایگزینی همزه و عین
+            replacements = {
+                'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ئ': 'ی', 'ة': 'ه',
+                'ك': 'ک', 'ى': 'ی', 'ؤ': 'و', 'ء': ''
+            }
+            
+            for old, new in replacements.items():
+                text = text.replace(old, new)
+            
+            # حذف فاصله و علائم نگارشی
+            text = ''.join(c for c in text if c.isalpha() or c.isspace())
+            
+            return text
+        
+        positions = []
+        df_local = df.copy()
+        
+        # ایجاد ستون کلید مرتب‌سازی
+        df_local['sort_key'] = df_local['fa_title'].apply(persian_sort_key)
+        
+        # پردازش هر نوع درس جداگانه
+        for course_type in ['پایه', 'تخصصی الزامی', 'تخصصی اختیاری', 'مهارتی', '']:
+            if course_type == '':
+                mask = (df_local['course_type'].isna()) | (df_local['course_type'] == '')
             else:
-                position_counter[course_type] += 1
+                mask = df_local['course_type'] == course_type
             
-            positions.append(position_counter[course_type])
+            if not mask.any():
+                continue
+            
+            # مرتب‌سازی دروس این نوع
+            type_df = df_local[mask].copy()
+            type_df_sorted = type_df.sort_values('sort_key')
+            
+            # اختصاص موقعیت‌ها
+            position_counter = 1
+            for idx in type_df_sorted.index:
+                df_local.at[idx, 'position'] = position_counter
+                position_counter += 1
+        
+        # برگرداندن موقعیت‌ها
+        positions = df_local['position'].astype(int).tolist()
+        
+        # نمایش نمونه‌ای از مرتب‌سازی
+        print("📊 Alphabetical sorting by Persian title:")
+        sample_df = df_local[['fa_title', 'course_type', 'position']].sort_values(['course_type', 'position'])
+        for _, row in sample_df.head(10).iterrows():
+            print(f"  {row['position']:2d}. [{row['course_type'] or 'بدون نوع'}] {row['fa_title']}")
         
         return positions
-    
+
     def _generate_course_file(self, row) -> bool:
         """ایجاد فایل Markdown برای یک درس"""
         try:
