@@ -3,7 +3,7 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'علوم داده، پیشنهادی فردوسی مشهد',
+  title: 'برنامه درسی دوره کارشناسی علوم داده، پیشنهادی فردوسی مشهد',
   favicon: 'img/dslab-logo.ico',
 
   // Set the production url of your site here
@@ -12,8 +12,9 @@ const config: Config = {
   // // For GitHub pages deployment, it is often '/<projectName>/'
   // baseUrl: '',
 
-  url: 'https://mamintoosi.ir',
-  baseUrl: '/fum-ds/', // ← حتماً / در ابتدا و انتها
+  url: 'https://fum-ds.ir',
+  baseUrl: '',
+  // baseUrl: '/fum-ds/', // ← حتماً / در ابتدا و انتها
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -38,9 +39,9 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
         },
-        blog: {
-          showReadingTime: true,
-        },
+        // blog: {
+        //   showReadingTime: true,
+        // },
         theme: {
           customCss: ['./src/css/custom.css', './src/css/font.css'],
         },
@@ -55,7 +56,7 @@ const config: Config = {
       title: 'علوم داده',
       logo: {
         alt: 'FUMDS Logo',
-        src: 'img/dslab-logo.png',
+        src: 'img/fumds-logo.jpg',
       },
       items: [
         {
