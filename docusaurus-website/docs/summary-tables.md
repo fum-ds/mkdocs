@@ -56,10 +56,33 @@
 |[کاربینی](/docs/curriculum/skill/Internship.md)|ندارد|1|
 | **مجموع تعداد واحد** |**دروس مهارتی**|**7**|
 
+## دروس اختیاری
+
+| نام درس | پیش‌نیاز | تعداد واحد |
+| ------- | -------- | ---------- |
+|[آشنایی با نظریه بازی ها](/docs/curriculum/elective/Introduction-to-Game-Theory.md)|احتمال1|3|
+|[آشنایی با یادگیری عمیق](/docs/curriculum/elective/Introduction-to-Deep-Learning.md)|[یادگیری ماشینی](/docs/curriculum/mandatory/Machine-Learning.md)|3|
+|[آمار و احتمال فازی](/docs/curriculum/elective/Fuzzy-Probability-and-Statistics.md)|[رگرسیون ۱](/docs/curriculum/mandatory/Regression-I.md)|3|
+|[برنامه‌نویسی موبایل](/docs/curriculum/elective/Mobile-Programming.md)|[برنامه‌سازی پیشرفته](/docs/curriculum/mandatory/Advanced-Programming.md)|3|
+|[برنامه‌نویسی وب](/docs/curriculum/elective/Web-Programming.md)|[برنامه‌سازی پیشرفته](/docs/curriculum/mandatory/Advanced-Programming.md)|3|
+|[تحلیل بقا مقدماتی](/docs/curriculum/elective/Elementary-Survival-Analysis.md)|نظریه آمار1|3|
+|[تحلیل سری های زمانی کاربردی ۲](/docs/curriculum/elective/Applied-Time-Series-Analysis-2.md)|تحلیل سری های زمانی کاربردی ۱|3|
+|[تحلیل شبکه‌های اجتماعی](/docs/curriculum/elective/Social-Networks-Analysis.md)|[مبانی ترکیبیات](/docs/curriculum/mandatory/Foundations-of-Combinatorics.md)|3|
+|[رایانش چند‌هسته‌ای](/docs/curriculum/elective/Multicore-Computing.md)|[برنامه‌سازی پیشرفته](/docs/curriculum/mandatory/Advanced-Programming.md)، اصول سیستم‌های کامپیوتری|3|
+|[روش‌های آماری چندمتغیره ۲](/docs/curriculum/elective/Multivariate-Statistical-Methods-II.md)|روشهای آماری چندمتغیره1|3|
+|[قابلیت اعتماد مقدماتی](/docs/curriculum/elective/Elementary-Reliability.md)|نظریه آمار1|3|
+|[مبانی آمار زیستی](/docs/curriculum/elective/Fundamentals-of-Biostatistics.md)|[رگرسیون ۱](/docs/curriculum/mandatory/Regression-I.md)|3|
+|[مبانی اقتصاد دیجیتال](/docs/curriculum/elective/Basics-of-Digital-Economics.md)|ندارد|2|
+|[مبانی رایانش ابری](/docs/curriculum/elective/Cloud-Computing-Fundamentals.md)|شبکه‌های کامپیوتری، سیستم‌های عامل|3|
+|[مدیریت پروژه‌های فناوری اطلاعات](/docs/curriculum/elective/Information-Technology-Project-Management.md)|ندارد|3|
+|[نظریه اطلاع مقدماتی](/docs/curriculum/elective/Elementary-Information-Theory.md)|فرایندهای تصادفی|3|
+|[کنترل کیفیت آماری](/docs/curriculum/elective/Statistical-Quality-Control.md)|روشهای نمونه گیری|3|
+| **مجموع تعداد واحد** |**دروس اختیاری**|**50**|
+
 ## خلاصه کلی
 
 | نوع درس | تعداد واحد |
 | ------- | ---------- |
-| **مجموع کل واحدها** | **103** |
+| **مجموع کل واحدها** | **153** |
 
 > **نکته**: این تعداد واحد شامل دروس پایه، الزامی، اختیاری و مهارتی می‌شود.

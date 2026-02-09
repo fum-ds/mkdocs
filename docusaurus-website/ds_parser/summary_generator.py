@@ -14,8 +14,8 @@ class SummaryTableGenerator:
         self.subfolders = {
             'پایه': ('base', 'دروس پایه'),
             'تخصصی الزامی': ('mandatory', 'دروس الزامی'),
-            'تخصصی اختیاری': ('elective', 'دروس اختیاری'),
-            'مهارتی': ('skill', 'دروس مهارتی')
+            'مهارتی': ('skill', 'دروس مهارتی'),
+            'تخصصی اختیاری': ('elective', 'دروس اختیاری')
         }
         # اضافه کردن نگاشت عنوان فارسی به اطلاعات درس
         self.course_mapping: Dict[str, Dict] = {}
